@@ -6,7 +6,14 @@ import sys
 from textwrap import fill
 
 def parse_gb(input_file, min_length, max_length):
-
+    '''
+    J:
+    Description of function.
+    Input:
+    variable - type - description
+    Output:
+    variable - type - description
+    '''
     OUTPUT_FILE_UTR5 = '.'.join(input_file.split('.')[:-1]) + 'UTR5.fasta'
     OUTPUT_FILE_ORF1 = '.'.join(input_file.split('.')[:-1]) + 'ORF1.fasta'
     OUTPUT_FILE_ORF2 = '.'.join(input_file.split('.')[:-1]) + 'ORF2.fasta'
@@ -20,11 +27,25 @@ def parse_gb(input_file, min_length, max_length):
     cds = re.compile(r"^\s{5}CDS[0-9\.\s<>]+")
     utr5 = re.compile(r"^\s{5}5\'UTR[0-9\.\s<>]+")
     utr3 = re.compile(r"^\s{5}3\'UTR[0-9\.\s<>]+")
-    origin = re.compile(r"\s+\d+\s+([a,t,g,c ]+)$")
+    '''
+    J:
+    Artem, please read about the ambiguous nucleotides:
+    https://genomevolution.org/wiki/index.php/Ambiguous_nucleotide
+    They are very common. Your RegExp might loose the nucleotides in 
+    unexpected positions. You'd better use [atgcnrykmswbdhvu\s]+ here.
+    '''
+    origin = re.compile(r"\s+\d+\s+([a,t,g,c ]+)$") 
     orf1 = re.compile(r".*(major|orf1|ORF1|VP1|polyprotein).*")
     orf2 = re.compile(r".*(minor|orf2|ORF2|VP2).*")
 
+
     def take_location(line_in):
+        '''
+        J:
+        Description of the function.
+        line_in - type - description
+        [start_loc, end_loc] - type - descr
+        '''
         loc = ((line_in.split())[1]).split("..")
         start_loc = int((re.findall(r"\w+", loc[0]))[0])
         end_loc = int((re.findall(r"\w+", loc[1]))[0])
@@ -51,6 +72,11 @@ def parse_gb(input_file, min_length, max_length):
 
                 m = accession.match(line)  # finds ACCESSION field using RegExp
                 if (m):
+                    """
+                    J:
+                    min and max size of sequences can not be used since you write
+                    every sequence into output file
+                    """
                     test_accession = m.group(1)  # accession number
                     out_utr5.write('>'+test_accession+'\n')
                     out_orf1.write('>'+test_accession+'\n')
@@ -82,9 +108,14 @@ def parse_gb(input_file, min_length, max_length):
 
                 if cds_field is True:
                     if re.match(r"^\s+/[a-zA-Z]+.*", line):
+                        """
+                        J:
+                        Why not making note_field,product_field,product_field False 
+                        when you reach the end of entry? line 130
+                        """
                         note_field = False
                         product_field = False
-                        gene_field = False
+                        product_field = False
                     if re.match(r"^\s+/note=.+", line) :
                         note_field = True  # inside /note
                     if re.match(r"^\s+/product=.+", line) :
@@ -97,6 +128,10 @@ def parse_gb(input_file, min_length, max_length):
                         orf2_location = cds_location
 
                 if re.match(r"^//$", line):  # end of record
+                    """
+                    J:
+                    You might check the same for UTR3
+                    """
                     if utr5_location == [0, 0]:
                         utr5_location = [0, orf1_location[0]-1]
                     print (test_accession, utr5_location, orf1_location, orf2_location, utr3_location)
@@ -125,17 +160,23 @@ def parse_gb(input_file, min_length, max_length):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
+    """
+    J:
+    If the argument is obligatory, you can add  
+    required=True to add_argument() function. My solution with checking
+    the number of arguments was lame.
+    """
     parser.add_argument("-input", "--input_file", type=str,
-                        help="Input file")
+                        help="Input file", required=True)
     parser.add_argument("-min", "--min_length", type=int,
                         help="Minimal length of sequence.\
-                        Sequences shorter than min length will not be included in the final dataset")
+                        Sequences shorter than min length \
+                        will not be included in the final dataset")
     parser.add_argument("-max", "--max_length", type=int,
                         help="Maximal length of sequence. \
-                        Sequences longer than max length will not be included in the final dataset")
+                        Sequences longer than max length \
+                        will not be included in the final dataset")
     args = parser.parse_args()
 
-    if not len(sys.argv) == 7:
-        print("Please, use \"python parser_gb.py --help\"")
-    else:
-        parse_gb(args.input_file, args.min_length, args.max_length)
+
+    parse_gb(args.input_file, args.min_length, args.max_length)
