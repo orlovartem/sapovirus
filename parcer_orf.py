@@ -216,6 +216,10 @@ def parse_gb(input_file):
                         utr3_location = [1, 0]
                         
                     # print(test_accession, utr5_location, orf1_location, orf2_location, utr3_location)
+                    '''
+                    J: здесь хочется zip https://younglinux.info/python/feature/zip
+                    '''
+                    
                     out_utr5.write(fill(test_origin[utr5_location[0]-1:utr5_location[1]], 60)+'\n')
                     out_orf1.write(fill(test_origin[orf1_location[0]-1:orf1_location[1]], 60)+'\n')
                     out_orf2.write(fill(test_origin[orf2_location[0]-1:orf2_location[1]], 60)+'\n')
