@@ -39,7 +39,9 @@ def parse_gb(input_file):
 
     def take_from_commas(line):
         '''
-        The function takes string value between commas in line.
+        J: наверное, имелись в виду кавычки? double quotes
+        
+        The function takes string value between commas in line. 
 
         Input:
         line - string - an input line
@@ -66,7 +68,8 @@ def parse_gb(input_file):
 
         Input:
             csv_file_input - string - name of csv-file in the directory of the
-            script input_str - string - a string value from feature in genbank file
+            script
+            input_str - string - a string value from feature in genbank file
 
         Output:
             output_str - string - short designation from csv-file
@@ -98,6 +101,8 @@ def parse_gb(input_file):
     try:
         count_total_entries = 0
         count_notread = 0
+        
+        # locations of genome regions
         source_location = [0, 0]
         utr5_location = [0, 0]
         cds_location = [0, 0]
@@ -184,6 +189,12 @@ def parse_gb(input_file):
                     test_accession = m.group(1)  # accession number
 
                 if re.match(r"^//$", line):  # end of record
+                    '''
+                    J: можно так:
+                    for out_file in [out_utr5, out_orf1, out_orf2, out_orf12, out_utr3]Ж
+                        out_file.write('>'+test_accession+'_'+strain+'_'+country+'_'+host+'_'+collection_date+'\n')
+                    '''
+                    
                     out_utr5.write('>'+test_accession+'_'+strain+'_'+country+'_'+host+'_'+collection_date+'\n')
                     out_orf1.write('>'+test_accession+'_'+strain+'_'+country+'_'+host+'_'+collection_date+'\n')
                     out_orf2.write('>'+test_accession+'_'+strain+'_'+country+'_'+host+'_'+collection_date+'\n')
@@ -203,12 +214,15 @@ def parse_gb(input_file):
                     if orf1_location == [1, 0] and orf2_location == [1, 0]:
                         count_notread += 1
                         utr3_location = [1, 0]
+                        
                     # print(test_accession, utr5_location, orf1_location, orf2_location, utr3_location)
                     out_utr5.write(fill(test_origin[utr5_location[0]-1:utr5_location[1]], 60)+'\n')
                     out_orf1.write(fill(test_origin[orf1_location[0]-1:orf1_location[1]], 60)+'\n')
                     out_orf2.write(fill(test_origin[orf2_location[0]-1:orf2_location[1]], 60)+'\n')
                     out_orf12.write(fill(test_origin[orf1_location[0]-1:orf2_location[1]], 60)+'\n')
                     out_utr3.write(fill(test_origin[utr3_location[0]-1:utr3_location[1]], 60)+'\n')
+                    
+                    
                     test_origin = ''
                     utr5_location = [0, 0]
                     cds_location = [0, 0]
