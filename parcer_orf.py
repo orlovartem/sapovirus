@@ -37,17 +37,15 @@ def parse_gb(input_file):
     orf2 = re.compile(r".*(minor|orf2|ORF2|VP2).*")
     source = re.compile(r"^\s{5}source[0-9\.\s<>]+")
 
-    def take_from_commas(line):
+    def take_from_quotes(line):
         '''
-        J: наверное, имелись в виду кавычки? double quotes
-        
-        The function takes string value between commas in line. 
+        The function takes string value between double quotes in line.
 
         Input:
         line - string - an input line
 
         Output:
-        result - string - symbols between two commas in line
+        result - string - symbols between double quotes in line
         '''
         count = 0
         i1 = 0
@@ -78,8 +76,9 @@ def parse_gb(input_file):
             output_str = ''
             reader = csv.DictReader(csv_file, delimiter=",", fieldnames=["base", "new"])
             for line in reader:
-                if (line["base"] or line["new"]) in input_str:
-                    output_str = line["new"]
+                base = re.compile(line["base"])
+                if base.match(input_str):
+                    output_str = line["new"].strip()
             return output_str
 
     def take_location(line_in):
@@ -98,10 +97,11 @@ def parse_gb(input_file):
         start_loc = int((re.findall(r"\w+", loc[0]))[0])
         end_loc = int((re.findall(r"\w+", loc[1]))[0])
         return [start_loc, end_loc]
+    #if 0==0:
     try:
         count_total_entries = 0
         count_notread = 0
-        
+
         # locations of genome regions
         source_location = [0, 0]
         utr5_location = [0, 0]
@@ -110,12 +110,14 @@ def parse_gb(input_file):
         orf2_location = [1, 0]
         orf1a_location = [0, 0]
         orf1b_location = [0, 0]
+        orf12_location = [0, 0]
         utr3_location = [0, 0]
         out_utr5 = open(OUTPUT_FILE_UTR5, 'w')
         out_orf1 = open(OUTPUT_FILE_ORF1, 'w')
         out_orf2 = open(OUTPUT_FILE_ORF2, 'w')
         out_orf12 = open(OUTPUT_FILE_ORF12, 'w')
         out_utr3 = open(OUTPUT_FILE_UTR3, 'w')
+        out_list = [out_utr5, out_orf1, out_orf2, out_orf12, out_utr3]
         with open(input_file, "r") as in_f:
             cds_field = False  # outside cds field
             note_field = False
@@ -150,20 +152,20 @@ def parse_gb(input_file):
                     test_origin += re.sub("\s+", "", m.group(1))
 
                 if re.match(r"^\s+/strain=.+", line):
-                    strain = take_from_commas(line)
+                    strain = take_from_quotes(line)
 
                 if re.match(r"^\s+/country=.+", line):
-                    country = take_from_commas(line)
+                    country = take_from_quotes(line)
                     if not country == '':
                         country = csv_reader('country_map.csv', country)
 
                 if re.match(r"^\s+/host=.+", line):
-                    host = take_from_commas(line)
+                    host = take_from_quotes(line)
                     if not host == '':
                         host = csv_reader('host_map.csv', host)
 
                 if re.match(r"^\s+/collection_date=.+", line):
-                    collection_date = take_from_commas(line)
+                    collection_date = take_from_quotes(line)
 
                 if cds_field is True:
                     if re.match(r"^\s+/[a-zA-Z]+.*", line):
@@ -189,17 +191,9 @@ def parse_gb(input_file):
                     test_accession = m.group(1)  # accession number
 
                 if re.match(r"^//$", line):  # end of record
-                    '''
-                    J: можно так:
-                    for out_file in [out_utr5, out_orf1, out_orf2, out_orf12, out_utr3]Ж
+
+                    for out_file in out_list:
                         out_file.write('>'+test_accession+'_'+strain+'_'+country+'_'+host+'_'+collection_date+'\n')
-                    '''
-                    
-                    out_utr5.write('>'+test_accession+'_'+strain+'_'+country+'_'+host+'_'+collection_date+'\n')
-                    out_orf1.write('>'+test_accession+'_'+strain+'_'+country+'_'+host+'_'+collection_date+'\n')
-                    out_orf2.write('>'+test_accession+'_'+strain+'_'+country+'_'+host+'_'+collection_date+'\n')
-                    out_orf12.write('>'+test_accession+'_'+strain+'_'+country+'_'+host+'_'+collection_date+'\n')
-                    out_utr3.write('>'+test_accession+'_'+strain+'_'+country+'_'+host+'_'+collection_date+'\n')
 
                     count_total_entries += 1
                     if not orf1a_location == [0, 0]:
@@ -214,19 +208,13 @@ def parse_gb(input_file):
                     if orf1_location == [1, 0] and orf2_location == [1, 0]:
                         count_notread += 1
                         utr3_location = [1, 0]
-                        
-                    # print(test_accession, utr5_location, orf1_location, orf2_location, utr3_location)
-                    '''
-                    J: здесь хочется zip https://younglinux.info/python/feature/zip
-                    '''
-                    
-                    out_utr5.write(fill(test_origin[utr5_location[0]-1:utr5_location[1]], 60)+'\n')
-                    out_orf1.write(fill(test_origin[orf1_location[0]-1:orf1_location[1]], 60)+'\n')
-                    out_orf2.write(fill(test_origin[orf2_location[0]-1:orf2_location[1]], 60)+'\n')
-                    out_orf12.write(fill(test_origin[orf1_location[0]-1:orf2_location[1]], 60)+'\n')
-                    out_utr3.write(fill(test_origin[utr3_location[0]-1:utr3_location[1]], 60)+'\n')
-                    
-                    
+                    orf12_location = [orf1_location[0], orf2_location[1]]
+                    loc_list = [utr5_location, orf1_location, orf2_location, orf12_location, utr3_location]
+                    for out_file, loc in zip(out_list, loc_list):
+                        out_file.write(fill(test_origin[loc[0]-1:loc[1]], 60)+'\n')
+
+                   # print(test_accession, utr5_location, orf1_location, orf2_location, utr3_location)
+
                     test_origin = ''
                     utr5_location = [0, 0]
                     cds_location = [0, 0]

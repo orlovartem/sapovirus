@@ -1,10 +1,10 @@
-Homo, Homo
-Sus, Pig
-pig, Pig
-swine, Pig
-bat, Bat
-Eidolon, Bat
-Mus, Mouse
-Pan, Chimp
-Zalophus, Sea-lion
-dog, Dog
+[Hh]omo sapiens[.]*, human
+Sus [Ss]crofa, wild-boar
+Sus scrofa domesticus, swine
+[.]*pig[.]*, swine
+swine, swine
+[.]*bat[.]*, bat
+Pan troglodytes troglodytes, chimpanzee
+Zalophus californianus \(California sea lion\), sea-lion
+dog,dog
+Mus musculus, mice
