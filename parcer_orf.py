@@ -31,7 +31,7 @@ def parse_gb(input_file):
     utr5 = re.compile(r"^\s{5}5\'UTR[0-9\.\s<>]+")
     utr3 = re.compile(r"^\s{5}3\'UTR[0-9\.\s<>]+")
     origin = re.compile(r"\s+\d+\s+([atgcnrykmswbdhvu\s]+)$")
-    orf1 = re.compile(r".*(major|orf1|ORF1|VP1|polyprotein).*")
+    orf1 = re.compile(r".*(major|orf1|ORF1|polyprotein).*")
     orf1a = re.compile(r".*ORF1a.*")
     orf1b = re.compile(r".*ORF1b.*")
     orf2 = re.compile(r".*(minor|orf2|ORF2|VP2).*")
@@ -97,7 +97,7 @@ def parse_gb(input_file):
         start_loc = int((re.findall(r"\w+", loc[0]))[0])
         end_loc = int((re.findall(r"\w+", loc[1]))[0])
         return [start_loc, end_loc]
-    #if 0==0:
+    # if 0==0:
     try:
         count_total_entries = 0
         count_notread = 0
@@ -112,12 +112,20 @@ def parse_gb(input_file):
         orf1b_location = [0, 0]
         orf12_location = [0, 0]
         utr3_location = [0, 0]
+        codon_start = 1
         out_utr5 = open(OUTPUT_FILE_UTR5, 'w')
         out_orf1 = open(OUTPUT_FILE_ORF1, 'w')
         out_orf2 = open(OUTPUT_FILE_ORF2, 'w')
         out_orf12 = open(OUTPUT_FILE_ORF12, 'w')
         out_utr3 = open(OUTPUT_FILE_UTR3, 'w')
         out_list = [out_utr5, out_orf1, out_orf2, out_orf12, out_utr3]
+
+        exceptions_list = []
+        with open('exceptions.csv') as csv_file:
+            reader = csv.DictReader(csv_file, delimiter=",", fieldnames=["base", "new"])
+            for line in reader:
+                exceptions_list.append(line["base"])
+
         with open(input_file, "r") as in_f:
             cds_field = False  # outside cds field
             note_field = False
@@ -154,6 +162,12 @@ def parse_gb(input_file):
                 if re.match(r"^\s+/strain=.+", line):
                     strain = take_from_quotes(line)
 
+                if re.match(r"^\s+/isolate=.+", line):
+                    isolate = take_from_quotes(line)
+
+                if re.match(r"^\s+/organism=.+", line):
+                    organism = take_from_quotes(line)
+
                 if re.match(r"^\s+/country=.+", line):
                     country = take_from_quotes(line)
                     if not country == '':
@@ -177,27 +191,42 @@ def parse_gb(input_file):
                         product_field = True  # inside /product
                     if re.match(r"^\s+/gene=.+", line):
                         gene_field = True  # inside /gene
+                    if re.match(r"^\s+/codon_start=.+", line):
+                        codon_start = int((line.split('=')[1]).strip())
+
                     if (note_field or product_field or gene_field) is True and orf1a.match(line):
-                        orf1a_location = cds_location
+                        orf1a_location = [cds_location[0] + codon_start - 1, cds_location[1]]
+
                     if (note_field or product_field or gene_field) is True and orf1b.match(line):
-                        orf1b_location = cds_location
+                        orf1b_location = [cds_location[0] + codon_start - 1, cds_location[1]]
                     if (note_field or product_field or gene_field) is True and orf1.match(line):
-                        orf1_location = cds_location
+                        orf1_location = [cds_location[0] + codon_start - 1, cds_location[1]]
 
                     if (note_field or product_field or gene_field) is True and orf2.match(line):
-                        orf2_location = cds_location
+                        orf2_location = [cds_location[0] - codon_start, cds_location[1]]
                 m = accession.match(line)  # finds ACCESSION field using RegExp
                 if (m):
                     test_accession = m.group(1)  # accession number
 
                 if re.match(r"^//$", line):  # end of record
 
+                    strain_from_organism = organism.split(' ')[1]
+
+                    for el in [isolate, strain, strain_from_organism]:
+                        if el != 'none':
+                            info = el
+                            break
+
+                    if test_accession in exceptions_list:
+                        test_accession = csv_reader('exceptions.csv', test_accession)
+
                     for out_file in out_list:
-                        out_file.write('>'+test_accession+'_'+strain+'_'+country+'_'+host+'_'+collection_date+'\n')
+                        out_file.write('>'+test_accession+'_'+info+'_'+country+'_'+host+'_'+collection_date+'\n')
 
                     count_total_entries += 1
                     if not orf1a_location == [0, 0]:
                         orf1_location = [orf1a_location[0], orf1b_location[1]]
+                        # orfab_list.append(test_accession)
                     if utr3_location == [0, 0]:
                         if not orf2_location[1] == 0:
                             utr3_location = [orf2_location[1], source_location[1]]
@@ -213,7 +242,8 @@ def parse_gb(input_file):
                     for out_file, loc in zip(out_list, loc_list):
                         out_file.write(fill(test_origin[loc[0]-1:loc[1]], 60)+'\n')
 
-                   # print(test_accession, utr5_location, orf1_location, orf2_location, utr3_location)
+                    print(test_accession, utr5_location, orf1_location, orf2_location, utr3_location)
+                    #print('>'+test_accession+'_'+info+'_'+country+'_'+host+'_'+collection_date+'\n')
 
                     test_origin = ''
                     utr5_location = [0, 0]
@@ -227,8 +257,12 @@ def parse_gb(input_file):
                     note_field = False
                     product_field = False
                     gene_field = False
-                    country = 'unknown-country'
-                    host = 'unknown-host'
+                    country = 'none'
+                    host = 'none'
+                    strain = 'none'
+                    isolate = 'none'
+
+                    organism = 'none'
         print('Total entries:', count_total_entries, '\nNot readable entries:', count_notread)
         out_utr5.close()
         out_orf1.close()
@@ -245,7 +279,7 @@ def parse_gb(input_file):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-input", "--input_file", type=str,
-                        help="Input file", required=True)
+                        help="Input file")#, required=True)
     args = parser.parse_args()
-
+    args.input_file = "sapovirus_genomes.gb"
     parse_gb(args.input_file)
