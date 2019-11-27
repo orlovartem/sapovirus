@@ -252,7 +252,6 @@ if __name__ == "__main__":
         args.path_out = os.path.split(args.input_file)[0]
 
     #args.path_blast = "D:\\Programs\\blast-2.9.0+\\bin\\"
-    #args.input_file = "sapovirus_genomesORF1.fasta"
     args.path_blast = "blast-2.9.0+\\bin\\"
     resolve_ambiguos(args.input_file, args.path_out, args.window, args.path_blast)
 

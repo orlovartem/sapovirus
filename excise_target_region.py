@@ -17,8 +17,7 @@ from Bio import AlignIO
 #output_dir - output directory to save fasta file with sequences that overlap with target region
 def find_target_region(input_file, reference, rstart, rend, path_to_blast):
 
-    output_dir = '/'.join(input_file.split('/')[:-1])+'/'
-
+    output_dir = '/'.join(input_file.split('/')[:-1]) #+'/'
     #start and end positions of target region in reference sequence
     global start
     start = rstart
@@ -27,6 +26,8 @@ def find_target_region(input_file, reference, rstart, rend, path_to_blast):
 
     records = list(SeqIO.parse(input_file, "fasta"))
 
+
+    print('output_dir')
     seq_ordered = []
     for rec in records:
         seq_ordered.append(rec.id)
@@ -45,6 +46,11 @@ def find_target_region(input_file, reference, rstart, rend, path_to_blast):
                             {out_path}blast.out -strand plus -evalue 1e-20 -word_size 7'.format(blast_path = path_to_blast, \
                             input = input_file, out_path = output_dir)
     #creating local database using reference sequence
+
+    print(makeblast_command)
+    print(blastn_command)
+
+
     subprocess.call(makeblast_command, shell=True)
 
     #blast against reference sequences
@@ -60,7 +66,6 @@ def find_target_region(input_file, reference, rstart, rend, path_to_blast):
 
 
     seq_names = list(blast_output.loc[blast_output['overlap'] == 1, 'qseqid']) #names of seqs which overlap with target region
-
 
     output_file =  output_dir + input_file.split('/')[-1].replace('.fasta', '_exc.fasta') #name of outputfile
 
@@ -114,6 +119,6 @@ if __name__ == "__main__":
     parser.add_argument("-path_blast", "--path_blast", type=str,
                         help="Path to blast")#, required = True)
     args = parser.parse_args()
-    args.path_blast = "C:\\Program Files\\NCBI\\blast-2.9.0+\\bin\\"
+    args.path_blast = "C:/Users/orlov/Documents/GitHub/sapovirus/blast-2.9.0+/bin/"
 
     find_target_region(args.input_file, args.reference, args.start, args.end, args.path_blast)
