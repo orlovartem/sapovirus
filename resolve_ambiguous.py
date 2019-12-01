@@ -247,15 +247,13 @@ if __name__ == "__main__":
                         help="window size")
     args = parser.parse_args()
 
-
     if not args.path_out:
         args.path_out = os.path.split(args.input_file)[0]
 
-    #args.path_blast = "D:\\Programs\\blast-2.9.0+\\bin\\"
-    args.path_blast = "blast-2.9.0+\\bin\\"
+
+    args.path_blast = "C:\\ProgramData\\NCBI\\blast-2.9.0+\\bin\\"
     resolve_ambiguos(args.input_file, args.path_out, args.window, args.path_blast)
 
 
 #path_to_blast = "D:\\Programs\\blast-2.9.0+\\bin\\"
 #path_to_blast = "D:\\MY_FILES\\Programs\\blast-2.6.0+\\bin\\"
-#path_to_blast = "blast-2.9.0+\\bin\\"

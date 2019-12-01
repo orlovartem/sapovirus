@@ -1,9 +1,12 @@
 Accession, Exception, Description
-KX431437, exception, ORF1a and ORF1b --- doubt
-HV042517, exception, bad genbank
-GQ261222, exception, bad genbank
-CS790749, exception, bad genbank
-JX993277, exception, bad genbank
-KX274477, exception, VP1 in ORF2
-AY603425, exception, the part of NC_006554 (see gb COMMENT)
-HM002617, exception, no ORF1 qualificator --- doubt
+KX431437, exception-KX431437, ORF1a and ORF1b --- doubt
+HV042517, exception-HV042517, bad genbank
+GQ261222, exception-GQ261222, bad genbank
+CS790749, exception-CS790749, bad genbank
+JX993277, exception-JX993277, bad genbank
+KX274477, exception-KX274477, VP1 in ORF2
+AY603425, exception-AY603425, the part of NC_006554 (see gb COMMENT)
+HM002617, exception-HM002617, no ORF1 qualificator --- doubt
+KY040366, exception-KY040366, ???
+MF175077, exception-MF175077, ! --- no errors, strange orf1
+LC215898, exception-LC215898, ! --- no errors, strange orf1

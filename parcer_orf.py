@@ -6,7 +6,7 @@ import sys
 from textwrap import fill
 
 
-def parse_gb(input_file):
+def parse_gb(input_file, remove_exceptions):
     '''
     The function parses genbank files and formes files with open reading frames
     and untranslated regions.
@@ -97,8 +97,8 @@ def parse_gb(input_file):
         start_loc = int((re.findall(r"\w+", loc[0]))[0])
         end_loc = int((re.findall(r"\w+", loc[1]))[0])
         return [start_loc, end_loc]
-    # if 0==0:
-    try:
+    if 0 == 0:
+    #try:
         count_total_entries = 0
         count_notread = 0
 
@@ -212,13 +212,34 @@ def parse_gb(input_file):
 
                     strain_from_organism = organism.split(' ')[1]
 
-                    for el in [isolate, strain, strain_from_organism]:
+                    for el in [strain, isolate, strain_from_organism]:
                         if el != 'none':
                             info = el
                             break
 
                     if test_accession in exceptions_list:
                         test_accession = csv_reader('exceptions.csv', test_accession)
+
+                    if test_accession.startswith('exception') and remove_exceptions == True:
+                        test_origin = ''
+                        utr5_location = [0, 0]
+                        cds_location = [0, 0]
+                        orf1a_location = [0, 0]
+                        orf1b_location = [0, 0]
+                        orf1_location = [1, 0]
+                        orf2_location = [1, 0]
+                        utr3_location = [0, 0]
+                        codon_start = 1
+                        cds_field = False  # outside cds field
+                        note_field = False
+                        product_field = False
+                        gene_field = False
+                        country = 'none'
+                        host = 'none'
+                        strain = 'none'
+                        isolate = 'none'
+                        organism = 'none'
+                        continue
 
                     for out_file in out_list:
                         out_file.write('>'+test_accession+'_'+info+'_'+country+'_'+host+'_'+collection_date+'\n')
@@ -243,7 +264,6 @@ def parse_gb(input_file):
                         out_file.write(fill(test_origin[loc[0]-1:loc[1]], 60)+'\n')
 
                     print(test_accession, utr5_location, orf1_location, orf2_location, utr3_location)
-                    #print('>'+test_accession+'_'+info+'_'+country+'_'+host+'_'+collection_date+'\n')
 
                     test_origin = ''
                     utr5_location = [0, 0]
@@ -253,6 +273,7 @@ def parse_gb(input_file):
                     orf1_location = [1, 0]
                     orf2_location = [1, 0]
                     utr3_location = [0, 0]
+                    codon_start = 1
                     cds_field = False  # outside cds field
                     note_field = False
                     product_field = False
@@ -261,7 +282,6 @@ def parse_gb(input_file):
                     host = 'none'
                     strain = 'none'
                     isolate = 'none'
-
                     organism = 'none'
         print('Total entries:', count_total_entries, '\nNot readable entries:', count_notread)
         out_utr5.close()
@@ -270,8 +290,8 @@ def parse_gb(input_file):
         out_orf12.close()
         out_utr3.close()
 
-    except Exception:
-        print('Error: can\'t read genbank file')
+    #except Exception:
+     #   print('Error: can\'t read genbank file')
 
     return None
 
@@ -279,7 +299,8 @@ def parse_gb(input_file):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-input", "--input_file", type=str,
-                        help="Input file")#, required=True)
+                        help="Input file", required=True)
+    parser.add_argument("-r", "--remove_exceptions",
+                        help="Remove exceptions", action="store_true")
     args = parser.parse_args()
-    args.input_file = "sapovirus_genomes.gb"
-    parse_gb(args.input_file)
+    parse_gb(args.input_file, args.remove_exceptions)
