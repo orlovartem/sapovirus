@@ -203,7 +203,7 @@ def parse_gb(input_file, remove_exceptions):
                         orf1_location = [cds_location[0] + codon_start - 1, cds_location[1]]
 
                     if (note_field or product_field or gene_field) is True and orf2.match(line):
-                        orf2_location = [cds_location[0] - codon_start, cds_location[1]]
+                        orf2_location = [cds_location[0] + codon_start - 1, cds_location[1]]
                 m = accession.match(line)  # finds ACCESSION field using RegExp
                 if (m):
                     test_accession = m.group(1)  # accession number

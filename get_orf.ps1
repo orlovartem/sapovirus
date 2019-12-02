@@ -14,6 +14,7 @@ python .\resolve_ambiguous.py -input ($PROJECT_DIR + $ORF1_FILE)
 
 rm ($PROJECT_DIR + $ORF1_SLICES_FILE)
 rm ($PROJECT_DIR + "local_db*")
+rm ($PROJECT_DIR + "blast.out")
 
 cat ($PROJECT_DIR + $ORF1_LESSAMB_FILE) | out-file -encoding ascii ($PROJECT_DIR + $ORF1_FILE)
 
