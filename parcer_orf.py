@@ -97,8 +97,7 @@ def parse_gb(input_file, remove_exceptions):
         end_loc = int((re.findall(r"\w+", loc[1]))[0])
         return [start_loc, end_loc]
 
-    if 0==0:
-    #try:
+    try:
         count_total_entries = 0
         count_notread = 0
 
@@ -290,8 +289,8 @@ def parse_gb(input_file, remove_exceptions):
         out_orf12.close()
         out_utr3.close()
 
-    #except Exception:
-     #   print('Error: can\'t read genbank file')
+    except Exception:
+        print('Error: can\'t read genbank file')
 
     return None
 
