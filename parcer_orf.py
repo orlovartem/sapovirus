@@ -1,8 +1,6 @@
 import argparse
 import csv
-import os
 import re
-import sys
 from textwrap import fill
 
 
@@ -74,7 +72,8 @@ def parse_gb(input_file, remove_exceptions):
         '''
         with open(csv_file_input) as csv_file:
             output_str = ''
-            reader = csv.DictReader(csv_file, delimiter=",", fieldnames=["base", "new"])
+            reader = csv.DictReader(csv_file, delimiter=",",
+                                    fieldnames=["base", "new"])
             for line in reader:
                 base = re.compile(line["base"])
                 if base.match(input_str):
@@ -97,7 +96,8 @@ def parse_gb(input_file, remove_exceptions):
         start_loc = int((re.findall(r"\w+", loc[0]))[0])
         end_loc = int((re.findall(r"\w+", loc[1]))[0])
         return [start_loc, end_loc]
-    if 0 == 0:
+
+    if 0==0:
     #try:
         count_total_entries = 0
         count_notread = 0
