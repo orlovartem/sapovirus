@@ -98,10 +98,6 @@ def parse_gb(input_file, remove_exceptions):
         return [start_loc, end_loc]
 
     try:
-        count_total_entries = 0
-        count_notread = 0
-
-        # locations of genome regions
         source_location = [0, 0]
         utr5_location = [0, 0]
         cds_location = [0, 0]
@@ -112,12 +108,29 @@ def parse_gb(input_file, remove_exceptions):
         orf12_location = [0, 0]
         utr3_location = [0, 0]
         codon_start = 1
+        cds_field = False
+        note_field = False
+        product_field = False
+        gene_field = False
+        test_origin = ''
+        country = 'none'
+        host = 'none'
+        strain = 'none'
+        isolate = 'none'
+        organism = 'none'
+        collection_date = 'none'
+
+        count_total_entries = 0
+        count_notread = 0
+
         out_utr5 = open(OUTPUT_FILE_UTR5, 'w')
         out_orf1 = open(OUTPUT_FILE_ORF1, 'w')
         out_orf2 = open(OUTPUT_FILE_ORF2, 'w')
         out_orf12 = open(OUTPUT_FILE_ORF12, 'w')
         out_utr3 = open(OUTPUT_FILE_UTR3, 'w')
+
         out_list = [out_utr5, out_orf1, out_orf2, out_orf12, out_utr3]
+        field_list = [cds_field, gene_field, note_field, product_field]
 
         exceptions_list = []
         with open('exceptions.csv') as csv_file:
@@ -126,11 +139,6 @@ def parse_gb(input_file, remove_exceptions):
                 exceptions_list.append(line["base"])
 
         with open(input_file, "r") as in_f:
-            cds_field = False  # outside cds field
-            note_field = False
-            product_field = False
-            gene_field = False
-            test_origin = ''
             for line in in_f:
                 m = accession.match(line)  # finds ACCESSION field using RegExp
                 if (m):
@@ -208,7 +216,6 @@ def parse_gb(input_file, remove_exceptions):
                     test_accession = m.group(1)  # accession number
 
                 if re.match(r"^//$", line):  # end of record
-
                     strain_from_organism = organism.split(' ')[1]
 
                     for el in [strain, isolate, strain_from_organism]:
@@ -220,24 +227,27 @@ def parse_gb(input_file, remove_exceptions):
                         test_accession = csv_reader('exceptions.csv', test_accession)
 
                     if test_accession.startswith('exception') and remove_exceptions == True:
-                        test_origin = ''
+                        source_location = [0, 0]
                         utr5_location = [0, 0]
                         cds_location = [0, 0]
-                        orf1a_location = [0, 0]
-                        orf1b_location = [0, 0]
                         orf1_location = [1, 0]
                         orf2_location = [1, 0]
+                        orf1a_location = [0, 0]
+                        orf1b_location = [0, 0]
+                        orf12_location = [0, 0]
                         utr3_location = [0, 0]
                         codon_start = 1
-                        cds_field = False  # outside cds field
+                        cds_field = False
                         note_field = False
                         product_field = False
                         gene_field = False
+                        test_origin = ''
                         country = 'none'
                         host = 'none'
                         strain = 'none'
                         isolate = 'none'
                         organism = 'none'
+                        collection_date = 'none'
                         continue
 
                     for out_file in out_list:
@@ -246,7 +256,6 @@ def parse_gb(input_file, remove_exceptions):
                     count_total_entries += 1
                     if not orf1a_location == [0, 0]:
                         orf1_location = [orf1a_location[0], orf1b_location[1]]
-                        # orfab_list.append(test_accession)
                     if utr3_location == [0, 0]:
                         if not orf2_location[1] == 0:
                             utr3_location = [orf2_location[1], source_location[1]]
@@ -263,32 +272,33 @@ def parse_gb(input_file, remove_exceptions):
                         out_file.write(fill(test_origin[loc[0]-1:loc[1]], 60)+'\n')
 
                     print(test_accession, utr5_location, orf1_location, orf2_location, utr3_location)
-
-                    test_origin = ''
+                    source_location = [0, 0]
                     utr5_location = [0, 0]
                     cds_location = [0, 0]
-                    orf1a_location = [0, 0]
-                    orf1b_location = [0, 0]
                     orf1_location = [1, 0]
                     orf2_location = [1, 0]
+                    orf1a_location = [0, 0]
+                    orf1b_location = [0, 0]
+                    orf12_location = [0, 0]
                     utr3_location = [0, 0]
                     codon_start = 1
-                    cds_field = False  # outside cds field
+                    cds_field = False
                     note_field = False
                     product_field = False
                     gene_field = False
+                    test_origin = ''
                     country = 'none'
                     host = 'none'
                     strain = 'none'
                     isolate = 'none'
                     organism = 'none'
+                    collection_date = 'none'
         print('Total entries:', count_total_entries, '\nNot readable entries:', count_notread)
         out_utr5.close()
         out_orf1.close()
         out_orf2.close()
         out_orf12.close()
         out_utr3.close()
-
     except Exception:
         print('Error: can\'t read genbank file')
 
