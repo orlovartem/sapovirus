@@ -1,6 +1,6 @@
 # Sapovirus (term project).
 
-This repository includes files of the term project. 
+This repository includes files of the term project.
 
 ## *parser_orf.py*
 
@@ -15,18 +15,62 @@ Saves output-files in the directory of input-file.
 ### Usage:
 
 ```
-parser_gb.py [-h] -input INPUT_FILE -min MIN_LENGTH -max MAX_LENGTH
+parser_gb.py [-h] -input INPUT_FILE
 
   -input <str>          Path to input-file in GenBank-format
-                        
-  -min   <int>          Minimal length of sequence. Sequences shorter than min
-                        length will not be included in the final dataset
-                        (doesn't  work yet)
-                        
-  -max   <int>          Maximal length of sequence. Sequences longer than max
-                        length will not be included in the final dataset
-                        (doesn't  work yet)
+
+  -r                    Remove sequences from exceptions.csv
 ```
+## *resolve_ambiguous.py*
+
+### Description:
+
+Resolves ambiguous nucleotides in nucleotide sequences according to consensus in most related sequences to the region with ambiguous nt.
+
+### Usage:
+
+```
+resolve_ambiguous.py [-h] -input INPUT_FILE -pout DIR_OUT [-w WIND_SIZE]
+
+  -input <str>          Path to file with alignment of nt sequences in fasta-format
+
+  -pout  <str>          Output directory. If not defined the output files will be saved in 'years' folder in the directory of input file
+
+  -w     <str>          Window size
+```
+## *get_orf.ps1*
+
+### Description:
+
+Runs scripts (parcer_orf.py, resolve_ambiguous.py) and MAFFT.
+
+Requires GenBank file (sapovirus_genomes.gb).
+
+### Usage:
+
+```
+./get_orf.ps1
+```
+## *genotyping.py*
+
+### Description:
+
+The script genotypes fasta records in alignments using colored tree.
+
+### Usage:
+
+```
+genotyping.py -in_rep REPOSITORY -in_tree TREE -in_csv CSV_TABLE
+
+  -in_rep  <str>        Repository containing fasta alignments
+
+  -in_tree <str>        Colored phegenetic tree in nwc format
+
+  -in_csv  <str>        CSV table with colors and genogroups
+```
+
 ## Requirements
 
 * Python 3
+* MAFFT
+*
