@@ -1,5 +1,6 @@
 from Bio import SeqIO
 import argparse
+import copy
 
 def parse_gb(input_file, remove_exceptions):
     '''
@@ -38,18 +39,18 @@ def parse_gb(input_file, remove_exceptions):
             if feature.type == 'CDS':
                 for key in cds_dict:
                     if cds_dict[key] == False:
-                        #print(cds_dict)
                         cds_dict[key] = True
-                        setattr(record, 'seq', (feature.location.extract(full_seq)))
-                        records_dict[key].append(record)
-                        #print(record.seq)
+                        seq = feature.location.extract(full_seq)
+                        new_record = copy.deepcopy(record)
+                        setattr(new_record, 'seq', seq)
+                        records_dict[key].append(new_record)
                         break
-    
     for key in records_dict:
         out_file_name = 'norovirus_'+key+'.fasta'
-        with open(out_file_name, 'r') as out_f:
-            SeqIO.write(records_dict[key], out_file_name, 'fasta')
-            out_f.close()
+        out_file = open(out_file_name, 'w+')
+        records_list = records_dict[key]
+        SeqIO.write(records_list, out_file_name, 'fasta')
+        out_file.close()
     
     print('\nDone')
 
